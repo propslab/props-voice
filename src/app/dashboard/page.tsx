@@ -8,12 +8,40 @@ export const metadata = {
   title: "ダッシュボード｜Props Voice",
 };
 
-const FREE_LIMIT = 3;
+const DEFAULT_MONTHLY_LIMIT = 3;
+const PAST_MONTHS_FOR_CHART = 6;
+const DRAFTS_LIMIT = 20;
+
+function resolveMonthlyLimit(): number {
+  const raw = process.env.POLISH_MONTHLY_LIMIT;
+  if (raw === undefined || raw === "") return DEFAULT_MONTHLY_LIMIT;
+  const parsed = parseInt(raw, 10);
+  if (Number.isNaN(parsed)) return DEFAULT_MONTHLY_LIMIT;
+  return parsed;
+}
 
 function currentYearMonth(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
+
+function pastYearMonths(count: number): string[] {
+  const result: string[] = [];
+  const now = new Date();
+  for (let i = count - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    result.push(ym);
+  }
+  return result;
+}
+
+const dateTimeFormatter = new Intl.DateTimeFormat("ja-JP", {
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -36,16 +64,40 @@ export default async function DashboardPage() {
   }
 
   const yearMonth = currentYearMonth();
-  const { data: usage } = await supabase
-    .from("usage_monthly")
-    .select()
-    .eq("user_id", user.id)
-    .eq("year_month", yearMonth)
-    .maybeSingle();
+  const chartMonths = pastYearMonths(PAST_MONTHS_FOR_CHART);
 
-  const usedCount = usage?.count ?? 0;
-  const remaining = Math.max(0, FREE_LIMIT - usedCount);
-  const isLimitReached = usedCount >= FREE_LIMIT;
+  const [{ data: usageRows }, { data: drafts }] = await Promise.all([
+    supabase
+      .from("usage_monthly")
+      .select()
+      .eq("user_id", user.id)
+      .in("year_month", chartMonths),
+    supabase
+      .from("drafts")
+      .select()
+      .eq("store_id", store.id)
+      .order("created_at", { ascending: false })
+      .limit(DRAFTS_LIMIT),
+  ]);
+
+  const usageMap = new Map<string, number>(
+    usageRows?.map((row) => [row.year_month, row.count]) ?? []
+  );
+  const monthlyChart = chartMonths.map((ym) => ({
+    ym,
+    count: usageMap.get(ym) ?? 0,
+  }));
+  const usedCount = usageMap.get(yearMonth) ?? 0;
+  const maxChartCount = Math.max(1, ...monthlyChart.map((m) => m.count));
+  const totalDrafts = drafts?.length ?? 0;
+  const hasAnyUsage = monthlyChart.some((m) => m.count > 0);
+
+  const monthlyLimit = resolveMonthlyLimit();
+  const isUnlimited = monthlyLimit <= 0;
+  const remaining = isUnlimited
+    ? null
+    : Math.max(0, monthlyLimit - usedCount);
+  const isLimitReached = !isUnlimited && usedCount >= monthlyLimit;
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const publicUrl = `${appUrl}/r/${store.slug}`;
@@ -61,16 +113,25 @@ export default async function DashboardPage() {
             <h1 className="text-2xl font-bold text-brand">ダッシュボード</h1>
             <p className="text-sm text-muted-foreground">{user.email}</p>
           </div>
-          <form action={signOut}>
-            <button
-              type="submit"
+          <div className="flex items-center gap-2">
+            <Link
+              href="/settings"
               className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-foreground/40"
             >
-              ログアウト
-            </button>
-          </form>
+              設定
+            </Link>
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-foreground/40"
+              >
+                ログアウト
+              </button>
+            </form>
+          </div>
         </header>
 
+        {/* 店舗情報 + QRコード */}
         <section className="grid gap-6 sm:grid-cols-2">
           <div className="rounded-lg border border-border bg-white p-6 shadow-sm space-y-4">
             <div>
@@ -82,20 +143,32 @@ export default async function DashboardPage() {
 
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">公開URL</p>
-              <code className="block break-all rounded-md bg-muted px-3 py-2 text-xs">
+              <a
+                href={publicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block break-all rounded-md bg-muted px-3 py-2 text-xs text-foreground hover:bg-muted/80"
+              >
                 {publicUrl}
-              </code>
+              </a>
             </div>
 
             <div className="space-y-1 pt-2 border-t border-border">
-              <p className="text-xs text-muted-foreground">今月の整文（フリープラン）</p>
+              <p className="text-xs text-muted-foreground">
+                今月の整文
+                {isUnlimited ? "（テスト期間：無制限）" : "（フリープラン）"}
+              </p>
               <p className="text-2xl font-bold text-foreground">
                 {usedCount}{" "}
                 <span className="text-base font-normal text-muted-foreground">
-                  / {FREE_LIMIT} 人
+                  {isUnlimited ? "人" : `/ ${monthlyLimit} 人`}
                 </span>
               </p>
-              {isLimitReached ? (
+              {isUnlimited ? (
+                <p className="text-xs text-muted-foreground">
+                  ローンチ前のため上限なくご利用いただけます。
+                </p>
+              ) : isLimitReached ? (
                 <p className="text-xs text-rose-700">
                   今月の無料枠を使い切りました。来月1日にリセットされます。
                 </p>
@@ -113,14 +186,145 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        <p className="text-center">
-          <Link
-            href="/"
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            ← トップに戻る
-          </Link>
-        </p>
+        {/* 月の口コミ数推移グラフ */}
+        <section className="rounded-lg border border-border bg-white p-6 shadow-sm space-y-4">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-sm font-semibold text-foreground">
+              月の整文数（過去 {PAST_MONTHS_FOR_CHART} ヶ月）
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              合計 {monthlyChart.reduce((sum, m) => sum + m.count, 0)} 件
+            </p>
+          </div>
+
+          {hasAnyUsage ? (
+            <div className="space-y-2">
+              <div className="flex items-end gap-2 h-32">
+                {monthlyChart.map(({ ym, count }, idx) => {
+                  const heightPct = (count / maxChartCount) * 100;
+                  const isCurrent = idx === monthlyChart.length - 1;
+                  return (
+                    <div
+                      key={ym}
+                      className="flex-1 flex flex-col items-center gap-1 min-w-0"
+                    >
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {count > 0 ? count : ""}
+                      </span>
+                      <div
+                        className={`w-full rounded-t transition-colors ${
+                          isCurrent ? "bg-brand" : "bg-brand/40"
+                        }`}
+                        style={{
+                          height: count > 0 ? `${Math.max(8, heightPct)}%` : "2px",
+                          minHeight: count > 0 ? "8px" : "2px",
+                        }}
+                        aria-label={`${ym}: ${count}件`}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex gap-2">
+                {monthlyChart.map(({ ym }) => {
+                  const month = parseInt(ym.split("-")[1], 10);
+                  return (
+                    <span
+                      key={ym}
+                      className="flex-1 text-center text-xs text-muted-foreground tabular-nums"
+                    >
+                      {month}月
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              まだ整文した口コミがありません。
+              <br />
+              QRコードを店頭に置いて、お客様の声を集めましょう。
+            </p>
+          )}
+        </section>
+
+        {/* 下書き一覧 */}
+        <section className="rounded-lg border border-border bg-white p-6 shadow-sm space-y-4">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-sm font-semibold text-foreground">
+              整文した口コミ
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              最新 {totalDrafts} 件 / 最大 {DRAFTS_LIMIT} 件表示
+            </p>
+          </div>
+
+          {drafts && drafts.length > 0 ? (
+            <ul className="divide-y divide-border">
+              {drafts.map((draft) => (
+                <li key={draft.id} className="py-4 first:pt-0 last:pb-0 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-amber-400" aria-label={`${draft.rating}つ星`}>
+                      {"★".repeat(draft.rating)}
+                      <span className="text-gray-300">
+                        {"★".repeat(5 - draft.rating)}
+                      </span>
+                    </p>
+                    <time
+                      dateTime={draft.created_at}
+                      className="text-xs text-muted-foreground tabular-nums"
+                    >
+                      {dateTimeFormatter.format(new Date(draft.created_at))}
+                    </time>
+                  </div>
+
+                  {draft.polished_text && (
+                    <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                      {draft.polished_text}
+                    </p>
+                  )}
+
+                  <details className="text-xs text-muted-foreground">
+                    <summary className="cursor-pointer hover:text-foreground">
+                      お客様の原文を見る
+                    </summary>
+                    <p className="mt-2 pl-3 border-l-2 border-border whitespace-pre-wrap">
+                      {draft.raw_input}
+                    </p>
+                  </details>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              まだ口コミが投稿されていません。
+            </p>
+          )}
+        </section>
+
+        <footer className="pt-6 border-t border-border space-y-2 text-center">
+          <p className="text-xs text-muted-foreground">
+            Props Voice は{" "}
+            <a
+              href="https://props-lab.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-foreground"
+            >
+              Props Lab
+            </a>
+            （IT 顧問業務）が提供する無料の口コミ収集ツールです。
+          </p>
+          <p className="text-xs text-muted-foreground">
+            <Link href="/" className="hover:text-foreground">
+              トップ
+            </Link>
+            {" · "}
+            <Link href="/settings" className="hover:text-foreground">
+              設定
+            </Link>
+          </p>
+        </footer>
       </div>
     </main>
   );

@@ -80,13 +80,9 @@ export function ReviewFlow({ slug }: { slug: string }) {
           コピーして Google に投稿
         </button>
 
-        <button
-          type="button"
-          onClick={() => setPhase("input")}
-          className="block w-full text-center text-sm text-muted-foreground hover:text-foreground"
-        >
-          書き直す
-        </button>
+        <p className="text-center text-xs text-muted-foreground">
+          文章が気になる場合は、上のテキストエリアで直接修正できます。
+        </p>
       </div>
     );
   }

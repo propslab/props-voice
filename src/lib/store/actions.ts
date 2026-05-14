@@ -95,3 +95,56 @@ export async function createStore(
   revalidatePath("/dashboard");
   redirect("/dashboard");
 }
+
+export type UpdateStoreResult =
+  | { success: true }
+  | { success: false; error: string };
+
+export async function updateStore(
+  formData: FormData
+): Promise<UpdateStoreResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "ログインが必要です" };
+  }
+
+  const name = String(formData.get("name") ?? "").trim();
+  const googleReviewUrl = String(
+    formData.get("google_review_url") ?? ""
+  ).trim();
+
+  if (!name || name.length > STORE_NAME_MAX) {
+    return {
+      success: false,
+      error: "店舗名を入力してください（100文字以内）",
+    };
+  }
+
+  if (!isValidUrl(googleReviewUrl)) {
+    return {
+      success: false,
+      error:
+        "Google レビューURLが正しくありません。https:// から始まる完全なURLを入力してください。",
+    };
+  }
+
+  const { error } = await supabase
+    .from("stores")
+    .update({ name, google_review_url: googleReviewUrl })
+    .eq("user_id", user.id);
+
+  if (error) {
+    return {
+      success: false,
+      error: `更新に失敗しました: ${error.message}`,
+    };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/settings");
+  return { success: true };
+}

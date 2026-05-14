@@ -1,21 +1,32 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { createStore } from "@/lib/store/actions";
+import { updateStore } from "@/lib/store/actions";
 
-export function OnboardingForm() {
+export function SettingsForm({
+  initialName,
+  initialGoogleReviewUrl,
+}: {
+  initialName: string;
+  initialGoogleReviewUrl: string;
+}) {
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<
+    | { type: "success"; message: string }
+    | { type: "error"; message: string }
+    | null
+  >(null);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setError(null);
-
+    setFeedback(null);
     const formData = new FormData(event.currentTarget);
     startTransition(async () => {
-      const result = await createStore(formData);
-      if (!result.success) {
-        setError(result.error);
+      const result = await updateStore(formData);
+      if (result.success) {
+        setFeedback({ type: "success", message: "保存しました" });
+      } else {
+        setFeedback({ type: "error", message: result.error });
       }
     });
   };
@@ -35,13 +46,10 @@ export function OnboardingForm() {
           type="text"
           required
           maxLength={100}
+          defaultValue={initialName}
           disabled={isPending}
-          placeholder="例：JERICHO HAIR"
           className="w-full rounded-md border border-border px-3 py-2.5 text-base focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 disabled:opacity-50"
         />
-        <p className="text-xs text-muted-foreground">
-          QRコードを置く看板や受付に表示される名称です。
-        </p>
       </div>
 
       <div className="space-y-2">
@@ -56,8 +64,8 @@ export function OnboardingForm() {
           name="google_review_url"
           type="url"
           required
+          defaultValue={initialGoogleReviewUrl}
           disabled={isPending}
-          placeholder="https://g.page/r/.../review"
           inputMode="url"
           className="w-full rounded-md border border-border px-3 py-2.5 text-base focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 disabled:opacity-50"
         />
@@ -78,26 +86,27 @@ export function OnboardingForm() {
               https://search.google.com/local/writereview?placeid=...
             </code>
           </p>
-          <p className="pt-1 text-[10px]">
-            ※ あとから設定画面で変更できます
-          </p>
         </div>
       </div>
 
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-md bg-brand px-4 py-2.5 text-base font-medium text-brand-foreground transition-colors hover:bg-brand-soft focus:outline-none focus:ring-2 focus:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-md bg-brand px-4 py-2.5 text-base font-medium text-brand-foreground transition-colors hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isPending ? "登録中..." : "QRコードを発行する"}
+        {isPending ? "保存中..." : "保存する"}
       </button>
 
-      {error && (
+      {feedback && (
         <div
-          role="alert"
-          className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800"
+          role="status"
+          className={`rounded-md border px-3 py-2 text-sm ${
+            feedback.type === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-rose-200 bg-rose-50 text-rose-800"
+          }`}
         >
-          {error}
+          {feedback.message}
         </div>
       )}
     </form>

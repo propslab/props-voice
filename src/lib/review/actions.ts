@@ -3,9 +3,20 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { polishWithClaude } from "@/lib/anthropic/polish";
 
-const FREE_LIMIT = 3;
 const MAX_INPUT_LENGTH = 200;
 const MAX_POLISHED_LENGTH = 1000;
+const DEFAULT_MONTHLY_LIMIT = 3;
+
+// `POLISH_MONTHLY_LIMIT` 環境変数で月の整文上限を制御。
+// - 未設定または "3" 等の正の数値 → その人数で制限
+// - "0" または負の数値 → 無制限（ローンチ前テスト用）
+function resolveMonthlyLimit(): number {
+  const raw = process.env.POLISH_MONTHLY_LIMIT;
+  if (raw === undefined || raw === "") return DEFAULT_MONTHLY_LIMIT;
+  const parsed = parseInt(raw, 10);
+  if (Number.isNaN(parsed)) return DEFAULT_MONTHLY_LIMIT;
+  return parsed;
+}
 
 export type PolishResult =
   | { success: true; polished: string; googleReviewUrl: string }
@@ -56,10 +67,11 @@ export async function polishDraft(
     .maybeSingle();
 
   const currentCount = usage?.count ?? 0;
-  if (currentCount >= FREE_LIMIT) {
+  const monthlyLimit = resolveMonthlyLimit();
+  if (monthlyLimit > 0 && currentCount >= monthlyLimit) {
     return {
       success: false,
-      error: `今月の整文枠（${FREE_LIMIT}名分）を使い切りました。来月1日にリセットされます。`,
+      error: `今月の整文枠（${monthlyLimit}名分）を使い切りました。来月1日にリセットされます。`,
     };
   }
 
