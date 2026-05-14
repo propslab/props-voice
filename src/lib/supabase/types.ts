@@ -20,6 +20,7 @@ export type Database = {
           email?: string | null;
           plan?: Plan;
         };
+        Relationships: [];
       };
       stores: {
         Row: {
@@ -43,6 +44,7 @@ export type Database = {
           google_review_url?: string;
           slug?: string;
         };
+        Relationships: [];
       };
       drafts: {
         Row: {
@@ -64,6 +66,7 @@ export type Database = {
         Update: {
           polished_text?: string | null;
         };
+        Relationships: [];
       };
       usage_monthly: {
         Row: {
@@ -81,6 +84,7 @@ export type Database = {
         Update: {
           count?: number;
         };
+        Relationships: [];
       };
       lead_emails: {
         Row: {
@@ -95,8 +99,16 @@ export type Database = {
           interested_plan?: "standard";
           created_at?: string;
         };
-        Update: never;
+        Update: {
+          email?: string;
+          interested_plan?: "standard";
+        };
+        Relationships: [];
       };
     };
+    Views: { [_ in never]: never };
+    Functions: { [_ in never]: never };
+    Enums: { [_ in never]: never };
+    CompositeTypes: { [_ in never]: never };
   };
 };

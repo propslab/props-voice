@@ -1,10 +1,10 @@
-# PropsVoice
+# Props Voice
 
 Props Lab のコマセツール（無料口コミ収集SaaS）。`voice.props-lab.jp` で公開予定。
 
 ## 戦略上の位置付け
 
-**PropsVoice は単独事業ではなく、Props Lab（月額¥8,000-¥80,000 IT顧問業）への集客装置（コマセ）。**
+**Props Voice は単独事業ではなく、Props Lab（月額¥8,000-¥80,000 IT顧問業）への集客装置（コマセ）。**
 
 実装判断に迷ったら **「これはコマセの本質か？」** を基準にする。
 

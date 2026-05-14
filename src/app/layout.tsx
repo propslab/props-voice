@@ -16,14 +16,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PropsVoice｜QRを置くだけで、来店客の声が積み上がる",
+  title: "Props Voice｜QRを置くだけで、来店客の声が積み上がる",
   description:
-    "PropsVoice は中小店舗向けの無料口コミ収集ツールです。QRコードを置くだけで、来店客の一言を AI が自然な Google レビュー文に整え、店舗の集客を後押しします。",
+    "Props Voice は中小店舗向けの無料口コミ収集ツールです。QRコードを置くだけで、来店客の一言を AI が自然な Google レビュー文に整え、店舗の集客を後押しします。",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "https://voice.props-lab.jp"
   ),
   openGraph: {
-    title: "PropsVoice｜QRを置くだけで、来店客の声が積み上がる",
+    title: "Props Voice｜QRを置くだけで、来店客の声が積み上がる",
     description:
       "中小店舗向けの無料口コミ収集ツール。Props Lab が提供します。",
     type: "website",
