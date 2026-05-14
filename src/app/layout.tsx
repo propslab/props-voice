@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   description:
     "Props Voice は中小店舗向けの無料口コミ収集ツールです。QRコードを置くだけで、来店客の一言を AI が自然な Google レビュー文に整え、店舗の集客を後押しします。",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://voice.props-lab.jp"
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://voice.props-lab.com"
   ),
   openGraph: {
     title: "Props Voice｜QRを置くだけで、来店客の声が積み上がる",

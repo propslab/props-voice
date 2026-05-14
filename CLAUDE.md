@@ -1,6 +1,6 @@
 # Props Voice
 
-Props Lab のコマセツール（無料口コミ収集SaaS）。`voice.props-lab.jp` で公開予定。
+Props Lab のコマセツール（無料口コミ収集SaaS）。`voice.props-lab.com` で公開予定。
 
 ## 戦略上の位置付け
 
