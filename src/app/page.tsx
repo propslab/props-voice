@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { QRCodeSVG } from "qrcode.react";
 import { LeadEmailForm } from "@/components/lead-email-form";
 
 const NAV_ITEMS = [
@@ -189,22 +190,22 @@ export default function Home() {
             <div className="relative">
               <div className="grid grid-cols-3 gap-3 sm:gap-4">
                 {/* スマホ風カード1: QR */}
-                <div className="rounded-2xl border border-border bg-white p-3 shadow-sm space-y-2 aspect-[9/16]">
-                  <p className="text-[10px] text-muted-foreground text-center">QRコード</p>
-                  <div className="aspect-square bg-gradient-to-br from-brand/90 to-brand-soft rounded-md flex items-center justify-center">
-                    <div className="grid grid-cols-5 gap-0.5">
-                      {Array.from({ length: 25 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-1.5 h-1.5 ${
-                            i % 3 === 0 || i % 5 === 0 ? "bg-white" : "bg-brand/40"
-                          }`}
-                        />
-                      ))}
-                    </div>
+                <div className="rounded-2xl border border-border bg-white p-3 shadow-sm space-y-2 aspect-[9/16] flex flex-col">
+                  <p className="text-[10px] text-muted-foreground text-center">
+                    店頭の QR コード
+                  </p>
+                  <div className="flex-1 flex items-center justify-center bg-white">
+                    <QRCodeSVG
+                      value="https://voice.props-lab.com/signup"
+                      size={96}
+                      level="M"
+                      marginSize={1}
+                      bgColor="#ffffff"
+                      fgColor="#1f2d40"
+                    />
                   </div>
                   <p className="text-[8px] text-center text-muted-foreground">
-                    QRをスキャン
+                    スマホで読み取る
                   </p>
                 </div>
 
@@ -423,7 +424,7 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
               {/* Free */}
               <div className="rounded-lg border-2 border-brand bg-white p-6 space-y-4 flex flex-col">
                 <div className="space-y-1">
@@ -522,56 +523,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Props Lab 顧問契約 */}
-              <div className="rounded-lg border-2 border-accent bg-gradient-to-br from-accent/5 to-accent/10 p-6 space-y-4 flex flex-col">
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-accent uppercase tracking-wider">
-                    Props Lab 顧問契約
-                  </p>
-                  <h3 className="text-xl font-bold text-foreground">
-                    本格的な集客改善は
-                  </h3>
-                  <p className="text-2xl font-bold text-foreground">
-                    ¥8,000〜
-                    <span className="text-base font-normal text-muted-foreground">
-                      {" "}/ 月
-                    </span>
-                  </p>
-                  <p className="text-xs text-muted-foreground">店舗ごとに伴走</p>
-                </div>
-
-                <ul className="space-y-2 text-sm text-foreground flex-1">
-                  <li className="flex items-start gap-2">
-                    <span className="text-accent">★</span>
-                    <span>口コミ運用・施策設計の伴走</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-accent">★</span>
-                    <span>Google ビジネスプロフィール改善</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-accent">★</span>
-                    <span>予約管理・SNS・売上分析の最適化</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-accent">★</span>
-                    <span>店舗オーナー専属のIT顧問</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-accent">★</span>
-                    <span>Props Voice の優先サポート</span>
-                  </li>
-                </ul>
-
-                <a
-                  href="https://props-lab.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full rounded-md bg-brand px-4 py-3 text-center text-sm font-semibold text-brand-foreground hover:bg-brand-soft transition-colors"
-                >
-                  Props Lab について
-                </a>
-              </div>
             </div>
           </div>
         </section>
