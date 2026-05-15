@@ -8,6 +8,9 @@ const PUBLIC_PATHS = new Set([
   "/signup",
   "/terms",
   "/privacy",
+  "/robots.txt",
+  "/sitemap.xml",
+  "/opengraph-image",
 ]);
 
 const PUBLIC_PREFIXES = ["/r/", "/auth/"];

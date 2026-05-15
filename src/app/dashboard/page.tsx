@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/lib/auth/actions";
 import { QrCodeBox } from "@/components/qr-code-box";
+import { CopyButton } from "@/components/copy-button";
 
 export const metadata = {
   title: "ダッシュボード｜Props Voice",
@@ -141,8 +142,11 @@ export default async function DashboardPage() {
               </h2>
             </div>
 
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">公開URL</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground">公開URL</p>
+                <CopyButton value={publicUrl} />
+              </div>
               <a
                 href={publicUrl}
                 target="_blank"

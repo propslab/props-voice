@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SettingsForm } from "@/components/settings-form";
+import { DeleteAccountButton } from "@/components/delete-account-button";
 
 export const metadata = {
   title: "設定｜Props Voice",
@@ -44,6 +45,18 @@ export default async function SettingsPage() {
             initialGoogleReviewUrl={store.google_review_url}
           />
         </div>
+
+        <section className="rounded-lg border border-border bg-white p-6 shadow-sm space-y-4">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">
+              危険な操作
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              アカウントを削除すると、店舗情報・QRコード・口コミ履歴がすべて消去されます。元に戻せません。
+            </p>
+          </div>
+          <DeleteAccountButton />
+        </section>
 
         <p className="text-center">
           <Link

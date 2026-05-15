@@ -75,7 +75,7 @@ export function ReviewFlow({ slug }: { slug: string }) {
           type="button"
           onClick={handleSubmit}
           disabled={!polished.trim()}
-          className="w-full rounded-md bg-brand px-4 py-3 text-base font-medium text-brand-foreground hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-md bg-brand px-4 py-4 text-base font-medium text-brand-foreground hover:bg-brand-soft active:bg-brand-soft transition-colors disabled:cursor-not-allowed disabled:opacity-50 min-h-[56px]"
         >
           コピーして Google に投稿
         </button>
@@ -91,8 +91,13 @@ export function ReviewFlow({ slug }: { slug: string }) {
     <div className="space-y-5">
       <div className="rounded-lg border border-border bg-white p-5 shadow-sm space-y-5">
         <div className="space-y-2">
-          <p className="block text-sm font-medium text-foreground">評価</p>
-          <div className="flex justify-center gap-1" role="radiogroup">
+          <p className="block text-sm font-medium text-foreground text-center">
+            評価
+          </p>
+          <div
+            className="flex justify-center gap-0.5 sm:gap-1"
+            role="radiogroup"
+          >
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
@@ -102,7 +107,7 @@ export function ReviewFlow({ slug }: { slug: string }) {
                 aria-label={`${n}つ星`}
                 onClick={() => setRating(n)}
                 disabled={isPending}
-                className={`text-5xl px-2 transition-colors disabled:opacity-50 ${
+                className={`flex h-14 w-14 items-center justify-center text-5xl leading-none transition-transform active:scale-90 disabled:opacity-50 ${
                   rating >= n ? "text-amber-400" : "text-gray-300"
                 }`}
               >
@@ -110,6 +115,15 @@ export function ReviewFlow({ slug }: { slug: string }) {
               </button>
             ))}
           </div>
+          {rating > 0 && (
+            <p className="text-center text-xs text-muted-foreground">
+              {rating === 5 && "とても良い"}
+              {rating === 4 && "良い"}
+              {rating === 3 && "ふつう"}
+              {rating === 2 && "やや不満"}
+              {rating === 1 && "不満"}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -140,7 +154,7 @@ export function ReviewFlow({ slug }: { slug: string }) {
         type="button"
         onClick={handlePolish}
         disabled={isPending || rating === 0 || !rawInput.trim()}
-        className="w-full rounded-md bg-brand px-4 py-3 text-base font-medium text-brand-foreground hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-md bg-brand px-4 py-4 text-base font-medium text-brand-foreground hover:bg-brand-soft active:bg-brand-soft transition-colors disabled:cursor-not-allowed disabled:opacity-50 min-h-[56px]"
       >
         {isPending ? "整えています..." : "AIに整えてもらう"}
       </button>

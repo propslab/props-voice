@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export type ActionResult =
   | { success: true; message?: string }
@@ -120,4 +120,41 @@ export async function signOut() {
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/login");
+}
+
+export type DeleteAccountResult =
+  | { success: true }
+  | { success: false; error: string };
+
+export async function deleteAccount(): Promise<DeleteAccountResult | never> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "ログインが必要です" };
+  }
+
+  const userId = user.id;
+
+  // 1. 認証セッションを終了
+  await supabase.auth.signOut();
+
+  // 2. Service Role で auth.users を削除
+  //    FK の ON DELETE CASCADE により profiles → stores → drafts → usage_monthly が連鎖削除される
+  const admin = createServiceClient();
+  const { error } = await admin.auth.admin.deleteUser(userId);
+
+  if (error) {
+    console.error("[deleteAccount] admin.deleteUser error:", error);
+    return {
+      success: false,
+      error:
+        "アカウント削除に失敗しました。お手数ですが運営者までご連絡ください。",
+    };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/?deleted=1");
 }
