@@ -489,7 +489,6 @@ export default function Home() {
                       {" "}/ 月
                     </span>
                   </p>
-                  <p className="text-xs text-amber-700 font-medium">近日公開</p>
                 </div>
 
                 <ul className="space-y-2 text-sm text-foreground flex-1">
