@@ -425,7 +425,7 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
+            <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
               {/* Free */}
               <div className="rounded-lg border-2 border-brand bg-white p-6 space-y-4 flex flex-col">
                 <div className="space-y-1">
