@@ -197,11 +197,12 @@ export default function Home() {
                   <div className="flex-1 flex items-center justify-center bg-white">
                     <QRCodeSVG
                       value="https://voice.props-lab.com/signup"
-                      size={96}
+                      size={64}
                       level="M"
                       marginSize={1}
                       bgColor="#ffffff"
                       fgColor="#1f2d40"
+                      className="w-full h-auto max-w-[96px]"
                     />
                   </div>
                   <p className="text-[8px] text-center text-muted-foreground">

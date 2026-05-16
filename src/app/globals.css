@@ -39,8 +39,10 @@
 body {
   font-family: var(--font-sans);
   font-feature-settings: "palt";
+  overflow-x: hidden;
 }
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
