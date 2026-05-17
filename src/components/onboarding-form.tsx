@@ -36,7 +36,7 @@ export function OnboardingForm() {
           required
           maxLength={100}
           disabled={isPending}
-          placeholder="例：JERICHO HAIR"
+          placeholder="例：あなたのお店の名前"
           className="w-full rounded-md border border-border px-3 py-2.5 text-base focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 disabled:opacity-50"
         />
         <p className="text-xs text-muted-foreground">
