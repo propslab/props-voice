@@ -106,26 +106,53 @@ export default async function DashboardPage() {
   return (
     <main className="flex-1 px-4 py-10 sm:py-12 bg-muted/40">
       <div className="mx-auto w-full max-w-3xl space-y-8">
-        <header className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-1 min-w-0">
             <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground">
               Props Voice
             </p>
             <h1 className="text-2xl font-bold text-brand">ダッシュボード</h1>
-            <p className="text-sm text-muted-foreground">{user.email}</p>
+            <p className="text-sm text-muted-foreground break-all">{user.email}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/settings"
-              className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-foreground/40"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-white px-3.5 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted hover:border-foreground/30 transition-colors whitespace-nowrap"
             >
+              <svg
+                className="h-4 w-4 text-muted-foreground"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
               設定
             </Link>
             <form action={signOut}>
               <button
                 type="submit"
-                className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-foreground/40"
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-white px-3.5 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted hover:border-foreground/30 transition-colors whitespace-nowrap"
               >
+                <svg
+                  className="h-4 w-4 text-muted-foreground"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
                 ログアウト
               </button>
             </form>
