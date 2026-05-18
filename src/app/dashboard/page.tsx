@@ -4,21 +4,25 @@ import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/lib/auth/actions";
 import { QrCodeBox } from "@/components/qr-code-box";
 import { CopyButton } from "@/components/copy-button";
+import { UpgradeButton } from "@/components/upgrade-button";
+import { PortalButton } from "@/components/portal-button";
 
 export const metadata = {
   title: "ダッシュボード｜Props Voice",
 };
 
 const DEFAULT_MONTHLY_LIMIT = 3;
+const STANDARD_MONTHLY_LIMIT = 20;
 const PAST_MONTHS_FOR_CHART = 6;
 const DRAFTS_LIMIT = 20;
 
-function resolveMonthlyLimit(): number {
+function resolveMonthlyLimit(plan: "free" | "standard"): number {
   const raw = process.env.POLISH_MONTHLY_LIMIT;
-  if (raw === undefined || raw === "") return DEFAULT_MONTHLY_LIMIT;
-  const parsed = parseInt(raw, 10);
-  if (Number.isNaN(parsed)) return DEFAULT_MONTHLY_LIMIT;
-  return parsed;
+  if (raw !== undefined && raw !== "") {
+    const parsed = parseInt(raw, 10);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+  return plan === "standard" ? STANDARD_MONTHLY_LIMIT : DEFAULT_MONTHLY_LIMIT;
 }
 
 function currentYearMonth(): string {
@@ -67,19 +71,24 @@ export default async function DashboardPage() {
   const yearMonth = currentYearMonth();
   const chartMonths = pastYearMonths(PAST_MONTHS_FOR_CHART);
 
-  const [{ data: usageRows }, { data: drafts }] = await Promise.all([
-    supabase
-      .from("usage_monthly")
-      .select()
-      .eq("user_id", user.id)
-      .in("year_month", chartMonths),
-    supabase
-      .from("drafts")
-      .select()
-      .eq("store_id", store.id)
-      .order("created_at", { ascending: false })
-      .limit(DRAFTS_LIMIT),
-  ]);
+  const [{ data: usageRows }, { data: drafts }, { data: profile }] =
+    await Promise.all([
+      supabase
+        .from("usage_monthly")
+        .select()
+        .eq("user_id", user.id)
+        .in("year_month", chartMonths),
+      supabase
+        .from("drafts")
+        .select()
+        .eq("store_id", store.id)
+        .order("created_at", { ascending: false })
+        .limit(DRAFTS_LIMIT),
+      supabase.from("profiles").select("plan").eq("id", user.id).single(),
+    ]);
+
+  const plan = (profile?.plan ?? "free") as "free" | "standard";
+  const isStandard = plan === "standard";
 
   const usageMap = new Map<string, number>(
     usageRows?.map((row) => [row.year_month, row.count]) ?? []
@@ -93,7 +102,7 @@ export default async function DashboardPage() {
   const totalDrafts = drafts?.length ?? 0;
   const hasAnyUsage = monthlyChart.some((m) => m.count > 0);
 
-  const monthlyLimit = resolveMonthlyLimit();
+  const monthlyLimit = resolveMonthlyLimit(plan);
   const isUnlimited = monthlyLimit <= 0;
   const remaining = isUnlimited
     ? null
@@ -184,30 +193,62 @@ export default async function DashboardPage() {
               </a>
             </div>
 
-            <div className="space-y-1 pt-2 border-t border-border">
-              <p className="text-xs text-muted-foreground">
-                今月の整文
-                {isUnlimited ? "（テスト期間：無制限）" : "（フリープラン）"}
-              </p>
-              <p className="text-2xl font-bold text-foreground">
-                {usedCount}{" "}
-                <span className="text-base font-normal text-muted-foreground">
-                  {isUnlimited ? "人" : `/ ${monthlyLimit} 人`}
+            <div className="space-y-3 pt-2 border-t border-border">
+              {/* プランバッジ */}
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">現在のプラン</p>
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                    isStandard
+                      ? "bg-brand text-white"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {isStandard && (
+                    <svg
+                      className="h-3 w-3"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden
+                    >
+                      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z" />
+                    </svg>
+                  )}
+                  {isStandard ? "Standard" : "Free"}
                 </span>
-              </p>
-              {isUnlimited ? (
+              </div>
+
+              {/* 月利用カウンタ */}
+              <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">
-                  ローンチ前のため上限なくご利用いただけます。
+                  今月の整文
+                  {isUnlimited && "（テスト期間：無制限）"}
                 </p>
-              ) : isLimitReached ? (
-                <p className="text-xs text-rose-700">
-                  今月の無料枠を使い切りました。来月1日にリセットされます。
+                <p className="text-2xl font-bold text-foreground">
+                  {usedCount}{" "}
+                  <span className="text-base font-normal text-muted-foreground">
+                    {isUnlimited ? "人" : `/ ${monthlyLimit} 人`}
+                  </span>
                 </p>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  あと {remaining} 人分整文できます。
-                </p>
-              )}
+                {isUnlimited ? (
+                  <p className="text-xs text-muted-foreground">
+                    ローンチ前のため上限なくご利用いただけます。
+                  </p>
+                ) : isLimitReached ? (
+                  <p className="text-xs text-rose-700">
+                    今月の枠を使い切りました。来月1日にリセットされます。
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    あと {remaining} 人分整文できます。
+                  </p>
+                )}
+              </div>
+
+              {/* プランボタン */}
+              <div className="pt-1">
+                {isStandard ? <PortalButton /> : <UpgradeButton />}
+              </div>
             </div>
           </div>
 
