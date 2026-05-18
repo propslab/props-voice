@@ -1,4 +1,5 @@
 export type Plan = "free" | "standard";
+export type PolishStyle = "formal" | "casual";
 
 export type Database = {
   public: {
@@ -8,17 +9,26 @@ export type Database = {
           id: string;
           email: string | null;
           plan: Plan;
+          stripe_customer_id: string | null;
+          stripe_subscription_id: string | null;
+          plan_updated_at: string | null;
           created_at: string;
         };
         Insert: {
           id: string;
           email?: string | null;
           plan?: Plan;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          plan_updated_at?: string | null;
           created_at?: string;
         };
         Update: {
           email?: string | null;
           plan?: Plan;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          plan_updated_at?: string | null;
         };
         Relationships: [];
       };
@@ -29,6 +39,7 @@ export type Database = {
           name: string;
           google_review_url: string;
           slug: string;
+          polish_style: PolishStyle;
           created_at: string;
         };
         Insert: {
@@ -37,12 +48,14 @@ export type Database = {
           name: string;
           google_review_url: string;
           slug: string;
+          polish_style?: PolishStyle;
           created_at?: string;
         };
         Update: {
           name?: string;
           google_review_url?: string;
           slug?: string;
+          polish_style?: PolishStyle;
         };
         Relationships: [];
       };
@@ -53,6 +66,8 @@ export type Database = {
           rating: number;
           raw_input: string;
           polished_text: string | null;
+          edited_polished_text: string | null;
+          edited_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -61,10 +76,14 @@ export type Database = {
           rating: number;
           raw_input: string;
           polished_text?: string | null;
+          edited_polished_text?: string | null;
+          edited_at?: string | null;
           created_at?: string;
         };
         Update: {
           polished_text?: string | null;
+          edited_polished_text?: string | null;
+          edited_at?: string | null;
         };
         Relationships: [];
       };
