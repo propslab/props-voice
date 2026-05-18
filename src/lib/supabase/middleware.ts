@@ -11,6 +11,7 @@ const PUBLIC_PATHS = new Set([
   "/robots.txt",
   "/sitemap.xml",
   "/opengraph-image",
+  "/api/stripe/webhook",
 ]);
 
 const PUBLIC_PREFIXES = ["/r/", "/auth/"];
