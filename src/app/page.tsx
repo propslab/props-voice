@@ -608,6 +608,9 @@ export default function Home() {
               <Link href="/privacy" className="hover:text-foreground">
                 プライバシーポリシー
               </Link>
+              <Link href="/commerce-act" className="hover:text-foreground">
+                特定商取引法に基づく表示
+              </Link>
               <Link href="/login" className="hover:text-foreground">
                 ログイン
               </Link>
