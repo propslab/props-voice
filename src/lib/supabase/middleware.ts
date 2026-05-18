@@ -8,6 +8,7 @@ const PUBLIC_PATHS = new Set([
   "/signup",
   "/terms",
   "/privacy",
+  "/commerce-act",
   "/robots.txt",
   "/sitemap.xml",
   "/opengraph-image",
