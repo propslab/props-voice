@@ -6,6 +6,7 @@ import { QrCodeBox } from "@/components/qr-code-box";
 import { CopyButton } from "@/components/copy-button";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { PortalButton } from "@/components/portal-button";
+import { DraftList, type DraftItem } from "@/components/draft-list";
 
 export const metadata = {
   title: "ダッシュボード｜Props Voice",
@@ -100,6 +101,16 @@ export default async function DashboardPage() {
   const usedCount = usageMap.get(yearMonth) ?? 0;
   const maxChartCount = Math.max(1, ...monthlyChart.map((m) => m.count));
   const totalDrafts = drafts?.length ?? 0;
+  const draftItems: DraftItem[] =
+    drafts?.map((d) => ({
+      id: d.id,
+      rating: d.rating,
+      raw_input: d.raw_input,
+      polished_text: d.polished_text,
+      edited_polished_text: d.edited_polished_text,
+      edited_at: d.edited_at,
+      createdAtLabel: dateTimeFormatter.format(new Date(d.created_at)),
+    })) ?? [];
   const hasAnyUsage = monthlyChart.some((m) => m.count > 0);
 
   const monthlyLimit = resolveMonthlyLimit(plan);
@@ -322,7 +333,7 @@ export default async function DashboardPage() {
 
         {/* 下書き一覧 */}
         <section className="rounded-lg border border-border bg-white p-6 shadow-sm space-y-4">
-          <div className="flex items-baseline justify-between">
+          <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-sm font-semibold text-foreground">
               整文した口コミ
             </h2>
@@ -331,47 +342,55 @@ export default async function DashboardPage() {
             </p>
           </div>
 
-          {drafts && drafts.length > 0 ? (
-            <ul className="divide-y divide-border">
-              {drafts.map((draft) => (
-                <li key={draft.id} className="py-4 first:pt-0 last:pb-0 space-y-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-amber-400" aria-label={`${draft.rating}つ星`}>
-                      {"★".repeat(draft.rating)}
-                      <span className="text-gray-300">
-                        {"★".repeat(5 - draft.rating)}
-                      </span>
-                    </p>
-                    <time
-                      dateTime={draft.created_at}
-                      className="text-xs text-muted-foreground tabular-nums"
-                    >
-                      {dateTimeFormatter.format(new Date(draft.created_at))}
-                    </time>
-                  </div>
-
-                  {draft.polished_text && (
-                    <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                      {draft.polished_text}
-                    </p>
-                  )}
-
-                  <details className="text-xs text-muted-foreground">
-                    <summary className="cursor-pointer hover:text-foreground">
-                      お客様の原文を見る
-                    </summary>
-                    <p className="mt-2 pl-3 border-l-2 border-border whitespace-pre-wrap">
-                      {draft.raw_input}
-                    </p>
-                  </details>
-                </li>
-              ))}
-            </ul>
+          {isStandard ? (
+            totalDrafts > 0 && (
+              <div className="flex justify-end">
+                <a
+                  href="/api/export/csv"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground shadow-sm hover:bg-muted hover:border-foreground/30 transition-colors"
+                >
+                  <svg
+                    className="h-3.5 w-3.5 text-muted-foreground"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  CSV をダウンロード
+                </a>
+              </div>
+            )
           ) : (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              まだ口コミが投稿されていません。
-            </p>
+            totalDrafts > 0 && (
+              <div className="flex justify-end">
+                <span className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground">
+                  <svg
+                    className="h-3 w-3"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  CSV 書き出しは Standard で利用可能
+                </span>
+              </div>
+            )
           )}
+
+          <DraftList drafts={draftItems} isStandard={isStandard} />
         </section>
 
         <footer className="pt-6 border-t border-border space-y-2 text-center">

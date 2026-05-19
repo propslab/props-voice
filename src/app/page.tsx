@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
-import { LeadEmailForm } from "@/components/lead-email-form";
 
 const NAV_ITEMS = [
   { label: "機能紹介", href: "#features" },
@@ -98,6 +97,10 @@ const FAQS = [
   {
     q: "本当に無料で使えますか？広告は表示されますか？",
     a: "はい、フリープランは無料でご利用いただけます。広告表示もありません。AI整文は月3人までの制限がありますが、来月1日にリセットされます。",
+  },
+  {
+    q: "Standard プラン（¥1,980/月）の解約はいつでもできますか？",
+    a: "はい、Standard プランはダッシュボードの「請求・解約管理」からいつでも解約いただけます。解約後も次回更新日までは Standard 機能をご利用いただけます。決済処理は Stripe を通じて安全に行われ、当社はクレジットカード情報を保持しません。",
   },
   {
     q: "お客様の入力した内容は何に使われますか？",
@@ -487,40 +490,46 @@ export default function Home() {
                   <p className="text-3xl font-bold text-foreground">
                     ¥1,980
                     <span className="text-base font-normal text-muted-foreground">
-                      {" "}/ 月
+                      {" "}/ 月（税込）
                     </span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    いつでも解約可能
                   </p>
                 </div>
 
                 <ul className="space-y-2 text-sm text-foreground flex-1">
                   <li className="flex items-start gap-2">
-                    <span className="text-muted-foreground">○</span>
+                    <span className="text-brand">✓</span>
                     <span>AI整文サポート 月20人まで</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-muted-foreground">○</span>
+                    <span className="text-brand">✓</span>
                     <span>整文スタイル選択（フォーマル / カジュアル）</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-muted-foreground">○</span>
+                    <span className="text-brand">✓</span>
                     <span>下書き履歴の再編集</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-muted-foreground">○</span>
-                    <span>低評価アラート通知</span>
+                    <span className="text-brand">✓</span>
+                    <span>低評価アラート通知（★1〜3 をメール受信）</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-muted-foreground">○</span>
+                    <span className="text-brand">✓</span>
                     <span>口コミデータ CSV 書き出し</span>
                   </li>
                 </ul>
 
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">
-                    公開時にメールでお知らせします
-                  </p>
-                  <LeadEmailForm />
-                </div>
+                <Link
+                  href="/signup"
+                  className="block w-full rounded-md border border-foreground bg-white px-4 py-3 text-center text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                >
+                  Standard で始める
+                </Link>
+                <p className="text-[11px] text-center text-muted-foreground">
+                  登録後ダッシュボードからアップグレードできます
+                </p>
               </div>
 
             </div>

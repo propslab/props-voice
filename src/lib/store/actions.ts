@@ -4,9 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { generateSlug } from "./slug";
+import type { PolishStyle } from "@/lib/supabase/types";
 
 const STORE_NAME_MAX = 100;
 const MAX_SLUG_RETRIES = 5;
+const POLISH_STYLES: readonly PolishStyle[] = ["casual", "formal"] as const;
 
 function isValidUrl(value: string): boolean {
   try {
@@ -116,6 +118,7 @@ export async function updateStore(
   const googleReviewUrl = String(
     formData.get("google_review_url") ?? ""
   ).trim();
+  const polishStyleRaw = String(formData.get("polish_style") ?? "").trim();
 
   if (!name || name.length > STORE_NAME_MAX) {
     return {
@@ -132,9 +135,27 @@ export async function updateStore(
     };
   }
 
+  const update: {
+    name: string;
+    google_review_url: string;
+    polish_style?: PolishStyle;
+  } = { name, google_review_url: googleReviewUrl };
+
+  // polish_style は Standard プランのみ反映。Free はサーバ側で無視。
+  if (polishStyleRaw && POLISH_STYLES.includes(polishStyleRaw as PolishStyle)) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("plan")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile?.plan === "standard") {
+      update.polish_style = polishStyleRaw as PolishStyle;
+    }
+  }
+
   const { error } = await supabase
     .from("stores")
-    .update({ name, google_review_url: googleReviewUrl })
+    .update(update)
     .eq("user_id", user.id);
 
   if (error) {
