@@ -19,12 +19,34 @@ function buildSystemPrompt(style: PolishStyle): string {
 - 評価が★4-5なら肯定的な表現、★1-3なら率直な改善要望を残す
 - お店の宣伝文句にしない（客の視点を保つ）
 
-返答は整文済みの本文のみ。前置きや説明は不要。`;
+【絶対遵守】
+- 返答は整文済みの口コミ本文のみ。前置き・説明・断り書きは一切含めない
+- 「申し訳ありません」「すみません」「整えることができません」「適切な口コミにできません」等の謝罪・拒否文は絶対に使わない
+- 入力が短くても・曖昧でも・誤字があっても、入力の意図を汲み取って必ず口コミ本文を生成する
+- どんな入力であっても、出力は必ず「お客様視点の口コミ文」として返す`;
 }
 
 const MODEL = "claude-haiku-4-5-20251001";
 const MAX_TOKENS = 500;
 const TEMPERATURE = 0.3;
+
+// Claude が稀に整文を拒否して返してくる説明文・謝罪文の検出。
+// これらが含まれていたら整文失敗として例外扱い → 来店客にはリトライ案内する。
+const REFUSAL_PATTERNS: RegExp[] = [
+  /申し訳(ありません|ございません|ない)/,
+  /(整える|整文|生成|作成)(ことが)?できません/,
+  /適切な口コミ.*できません/,
+  /^(すみません|ごめんなさい)/,
+  /^(ご入力|お客様の?入力)(いただいた)?(内容|一言)(から|を|では)/,
+  /(より具体的|もう少し詳しく|具体的な内容)/,
+];
+
+export class PolishRefusedError extends Error {
+  constructor() {
+    super("AI が整文を拒否しました");
+    this.name = "PolishRefusedError";
+  }
+}
 
 export async function polishWithClaude(
   storeName: string,
@@ -53,5 +75,13 @@ export async function polishWithClaude(
   if (!block || block.type !== "text") {
     throw new Error("Claude did not return text content");
   }
-  return block.text.trim();
+  const text = block.text.trim();
+
+  // 拒否文・説明文を検出したら例外として扱う
+  if (REFUSAL_PATTERNS.some((re) => re.test(text))) {
+    console.warn("[polishWithClaude] 拒否パターン検出:", text.slice(0, 100));
+    throw new PolishRefusedError();
+  }
+
+  return text;
 }

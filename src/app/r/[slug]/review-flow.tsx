@@ -23,9 +23,10 @@ export function ReviewFlow({ slug }: { slug: string }) {
   const [polished, setPolished] = useState("");
   const [googleUrl, setGoogleUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [retryUsed, setRetryUsed] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const handlePolish = () => {
+  const runPolish = (isRetry: boolean) => {
     setError(null);
     const snapshot = rawInput;
     startTransition(async () => {
@@ -37,9 +38,13 @@ export function ReviewFlow({ slug }: { slug: string }) {
         setPhase("polished");
       } else {
         setError(result.error);
+        if (isRetry) setRetryUsed(true);
       }
     });
   };
+
+  const handlePolish = () => runPolish(false);
+  const handleRetry = () => runPolish(true);
 
   const handleSubmit = async () => {
     try {
@@ -318,24 +323,36 @@ export function ReviewFlow({ slug }: { slug: string }) {
       </button>
 
       {error && (
-        <div
-          role="alert"
-          className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 flex items-start gap-2"
-        >
-          <svg
-            className="h-4 w-4 mt-0.5 shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
+        <div className="space-y-2">
+          <div
+            role="alert"
+            className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 flex items-start gap-2"
           >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 8v4M12 16h.01" />
-          </svg>
-          {error}
+            <svg
+              className="h-4 w-4 mt-0.5 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
+            {error}
+          </div>
+          {!retryUsed && (
+            <button
+              type="button"
+              onClick={handleRetry}
+              disabled={isPending || rating === 0 || !rawInput.trim()}
+              className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm font-medium text-foreground hover:bg-muted active:scale-[0.99] transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isPending ? "整えています..." : "もう一度整える"}
+            </button>
+          )}
         </div>
       )}
     </div>

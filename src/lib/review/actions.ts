@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { polishWithClaude } from "@/lib/anthropic/polish";
+import { polishWithClaude, PolishRefusedError } from "@/lib/anthropic/polish";
 import { sendLowRatingAlert } from "@/lib/email/resend";
 import type { PolishStyle, Plan } from "@/lib/supabase/types";
 
@@ -97,6 +97,13 @@ export async function polishDraft(
   try {
     polished = await polishWithClaude(store.name, rating, cleaned, style);
   } catch (e) {
+    if (e instanceof PolishRefusedError) {
+      // 来店客に「もう一度整える」を促す。カウントは消費しない。
+      return {
+        success: false,
+        error: "AI が整文しきれませんでした。少し言葉を変えてもう一度お試しください。",
+      };
+    }
     console.error("[polishDraft] Claude error:", e);
     return {
       success: false,
